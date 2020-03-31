@@ -19,7 +19,7 @@ services:
         ipv4_address: 172.28.0.2
 
   zabbix:
-    image: zabbix/zabbix-server-mysql:centos-4.0-latest
+    image: zabbix/zabbix-server-mysql:ubuntu-4.4.7
     restart: "always"
     container_name: zabbix-server
     ports:
@@ -27,7 +27,7 @@ services:
       - "10051:10051"
     environment:
       - DB_SERVER_HOST=172.28.0.2
-      - MYSQL_USER=”zabbix”
+      - MYSQL_USER=zabbix
       - MYSQL_PASSWORD=zabbix
       - MYSQL_DATABASE=zabbix
     volumes:
@@ -38,18 +38,18 @@ services:
         ipv4_address: 172.28.0.3
   
   webserver:
-    image: zabbix/zabbix-web-apache-mysql:centos-4.0-latest
+    image: zabbix/zabbix-web-apache-mysql:ubuntu-4.4.7
     restart: "always"
     container_name: zabbix-web
     ports:
       - "80:80"
       - "443:443"
     environment:
-      - DB_SERVER_HOST=”172.28.0.2″
-      - MYSQL_USER=”zabbix”
+      - DB_SERVER_HOST=172.28.0.2
+      - MYSQL_USER=zabbix
       - MYSQL_PASSWORD=zabbix
       - ZBX_SERVER_HOST=172.28.0.3
-      - PHP_TZ=”America/Sao_Paulo”
+      - PHP_TZ='America/Sao_Paulo'
     networks:
       testing_net:
         ipv4_address: 172.28.0.4
