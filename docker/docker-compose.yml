@@ -1,0 +1,62 @@
+version: '3.3'
+
+services:
+  bd:
+    image: mysql:5.7
+    restart: "always"
+    container_name: mysql-zabbix
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_DATABASE=zabbix
+      - MYSQL_USER=zabbix
+      - MYSQL_PASSWORD=zabbix
+      - MYSQL_ROOT_PASSWORD=Zabbix
+    volumes:
+      - /var/docker/zabbix/data:/var/lib/data
+    networks:
+      testing_net:
+        ipv4_address: 172.28.0.2
+
+  zabbix:
+    image: zabbix/zabbix-server-mysql:centos-4.0-latest
+    restart: "always"
+    container_name: zabbix-server
+    ports:
+      - "10050:10050"
+      - "10051:10051"
+    environment:
+      - DB_SERVER_HOST=172.28.0.2
+      - MYSQL_USER=”zabbix”
+      - MYSQL_PASSWORD=zabbix
+      - MYSQL_DATABASE=zabbix
+    volumes:
+      - /var/docker/zabbix/alertscripts:/usr/lib/zabbix/alertscripts
+      - /var/docker/zabbix/externalscripts:/usr/lib/zabbix/externalscripts
+    networks:
+      testing_net:
+        ipv4_address: 172.28.0.3
+  
+  webserver:
+    image: zabbix/zabbix-web-apache-mysql:centos-4.0-latest
+    restart: "always"
+    container_name: zabbix-web
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - DB_SERVER_HOST=”172.28.0.2″
+      - MYSQL_USER=”zabbix”
+      - MYSQL_PASSWORD=zabbix
+      - ZBX_SERVER_HOST=172.28.0.3
+      - PHP_TZ=”America/Sao_Paulo”
+    networks:
+      testing_net:
+        ipv4_address: 172.28.0.4
+
+networks:
+  testing_net:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.28.0.0/16
