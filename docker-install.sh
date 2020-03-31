@@ -16,4 +16,6 @@ apt update -y
 # instalando docker
 apt install docker-ce && apt install docker-compose -y
 
-systemctl status docker
+systemctl status docker | grep Active
+
+./docker-zabbix-env.sh
