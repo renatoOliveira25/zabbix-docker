@@ -60,6 +60,24 @@ services:
       testing_net:
         ipv4_address: 172.28.0.4
 
+     grafana:
+    image: grafana/grafana:master-ubuntu
+    restart: "always"
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    #volumes:
+    #  - /var/docker/grafana:/var/lib/grafana
+    #  - /var/docker/grafana/plugins:/var/lib/grafana/plugins
+    command: ['bash', 'grafana-cli plugins install alexanderzobnin-zabbix-app']
+    depends_on:
+      - bd
+      - zabbix
+      - webserver
+    networks:
+      testing_net:
+        ipv4_address: 172.28.0.5
+
 networks:
   testing_net:
     ipam:
