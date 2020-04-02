@@ -18,4 +18,8 @@ apt install docker-ce && apt install docker-compose -y
 
 systemctl status docker | grep Active
 
+groupadd docker
+
+usermod -aG docker $USER
+
 ./docker-zabbix-env.sh
