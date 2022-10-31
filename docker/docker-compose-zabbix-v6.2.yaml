@@ -1,0 +1,94 @@
+version: '3.8'
+
+services:
+
+ mysql-server:
+  image: mysql:8.0
+  container_name: mysql-server
+  networks:
+   - zbx_net
+  command:
+   - mysqld
+   - --character-set-server=utf8
+   - --collation-server=utf8_bin
+   - --default-authentication-plugin=mysql_native_password
+  environment:
+   - MYSQL_USER=zabbix
+   - MYSQL_DATABASE=zabbix
+   - MYSQL_PASSWORD=ZabbixVv#22
+   - MYSQL_ROOT_PASSWORD=Z@b1xVv2022
+   - TZ=America/Sao_Paulo
+  volumes:
+   - /mnt/docker/zabbix-mysql:/var/lib/mysql:rw
+
+ zabbix-server-mysql:
+  image: zabbix/zabbix-server-mysql:6.2.3-ubuntu
+  container_name: zabbix-server
+  networks:
+   - zbx_net
+  ports:
+   - 10050:10050
+   - 10051:10051
+  volumes:
+   - /etc/localtime:/etc/localtime:ro
+   - /mnt/docker/zabbix-data/alertscripts:/usr/lib/zabbix/alertscripts:ro
+   - /mnt/docker/zabbix-data/externalscripts:/usr/lib/zabbix/externalscripts:ro
+   - /mnt/docker/zabbix-data/export:/var/lib/zabbix/export:rw
+   - /mnt/docker/zabbix-data/modules:/var/lib/zabbix/modules:ro
+   - /mnt/docker/zabbix-data/enc:/var/lib/zabbix/enc:ro
+   - /mnt/docker/zabbix-data/ssh_keys:/var/lib/zabbix/ssh_keys:ro
+   - /mnt/docker/zabbix-data/mibs:/var/lib/zabbix/mibs:ro
+   - /mnt/docker/zabbix-data/snmptraps:/var/lib/zabbix/snmptraps:rw
+  environment:
+   - DB_SERVER_HOST=mysql-server
+   - MYSQL_DATABASE=zabbix
+   - MYSQL_USER=zabbix
+   - MYSQL_PASSWORD=ZabbixVv#22
+   - MYSQL_ROOT_PASSWORD=Z@b1xVv2022
+   - TZ=America/Sao_Paulo
+  depends_on:
+   - mysql-server
+
+ zabbix-web-nginx-mysql:
+  image: zabbix/zabbix-web-nginx-mysql:6.2.3-ubuntu
+  container_name: zabbix-web
+  networks:
+   - zbx_net
+  ports:
+   - 80:8080
+   - 443:8443
+  volumes:
+   - /etc/localtime:/etc/localtime:ro
+   - /mnt/docker/zabbix-nginx/nginx:/etc/ssl/nginx:ro
+   - /mnt/docker/zabbix-nginx/modules/:/usr/share/zabbix/modules/:ro
+  environment:
+   - ZBX_SERVER_HOST=zabbix-server-mysql
+   - DB_SERVER_HOST=mysql-server
+   - MYSQL_DATABASE=zabbix
+   - MYSQL_USER=zabbix
+   - MYSQL_PASSWORD=ZabbixVv#22
+   - MYSQL_ROOT_PASSWORD=Z@b1xVv2022
+   - TZ=America/Sao_Paulo
+  depends_on:
+   - mysql-server
+   - zabbix-server-mysql
+   
+ grafana:
+   image: grafana/grafana:9.2.2-ubuntu
+   container_name: grafana
+   networks:
+     - zbx_net
+   ports:
+     - 3000:3000
+   volumes:
+     - /mnt/docker/grafana:/var/lib/grafana
+     - /mnt/docker/grafana/plugins:/var/lib/grafana/plugins
+   command: ['bash', 'grafana-cli plugins install alexanderzobnin-zabbix-app']
+   depends_on:
+     - mysql-server
+     - zabbix-server-mysql
+     - zabbix-web
+
+networks:
+ zbx_net:
+   driver: bridge
