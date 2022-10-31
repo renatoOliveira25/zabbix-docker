@@ -87,7 +87,7 @@ services:
    depends_on:
      - mysql-server
      - zabbix-server-mysql
-     - zabbix-web
+     - zabbix-web-nginx-mysql
 
 networks:
  zbx_net:
